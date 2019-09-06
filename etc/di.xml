@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Elogic\Vendor\Api\Data\VendorInterface" type="Elogic\Vendor\Model\Vendor" /> <!-- wtf is for=? -->
+    <virtualType name="VendorGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <!-- Create our type VendorGridDataProvider -->
+    <virtualType name="VendorGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Elogic\Vendor\Model\ResourceModel\Vendor\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">VendorGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+    <!-- Simulate our class Elogic\Vendor\Model\ResourceModel\Vendor\Grid\Collection -->
+    <virtualType name="Elogic\Vendor\Model\ResourceModel\Vendor\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">elogic_vendors</argument>
+            <argument name="resourceModel" xsi:type="string">Elogic\Vendor\Model\ResourceModel\Vendor</argument>
+        </arguments>
+    </virtualType>
+    <!-- Type for vendor_vendors_listing_data_source -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="vendor_vendors_listing_data_source" xsi:type="string">Elogic\Vendor\Model\ResourceModel\Vendor\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
