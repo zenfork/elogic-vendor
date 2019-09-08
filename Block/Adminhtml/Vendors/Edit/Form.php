@@ -67,22 +67,6 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic {
                 ['name' => 'id']
             );
         }
-        if($model->getData('logo')){
-            $fieldset->addField(
-                'thumbnail',
-                'note',
-                [
-                    'name' => 'thumbnail',
-                    'label'	=> __(''),
-                    'required' => false,
-                    'note' => '<div>
-						<a href="'.$model->getData('image').'" target="_blank">
-							<img src="'.$model->getData('image').'" style="max-height:100px" />
-						</a>
-					</div>'
-                ]
-            );
-        }
 
         if ($model->getId()) {
             $fieldset->addField(
@@ -125,17 +109,14 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic {
                 'style' => 'height: 15em; width: 100%;'
             ]
         );
-        /*
-        * Todo: logo field
-        */
         $fieldset->addField(
             'logo',
-            'file',
+            'image',
             [
                 'name' => 'logo',
                 'label'	=> __('Logo'),
                 'required' => false,
-                'note' => 'Allow image type: jpg, jpeg, png'
+                'note' => 'Allowed image types: jpg, jpeg, png'
             ]
         );
         $fieldset->addField(

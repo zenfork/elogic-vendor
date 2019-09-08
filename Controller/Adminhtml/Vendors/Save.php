@@ -3,6 +3,7 @@ namespace Elogic\Vendor\Controller\Adminhtml\Vendors;
 use \Magento\Backend\App\Action;
 use \Magento\Backend\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\Filesystem\DirectoryList;
 class Save extends Action {
     protected $_resultPageFactory;
     protected $_resultPage;
@@ -18,11 +19,40 @@ class Save extends Action {
         $resultRedirect = $this->resultRedirectFactory->create();
         $id = $this->getRequest()->getParam('id');
         $model = $this->_objectManager->create('Elogic\Vendor\Model\Vendor');
-        $image = false;
+
         if($id) {
             $model->load($id);
-            $image = $model->getData('logo');
+            if ($id != $model->getId()) {
+                throw new \Magento\Framework\Exception\LocalizedException(__('The wrong item is specified.'));
+            }
         }
+
+        try {
+            $uploader = $this->_objectManager->create(
+                'Magento\MediaStorage\Model\File\Uploader',
+                ['fileId' => 'logo']
+            );
+            $uploader->setAllowedExtensions(['jpg', 'jpeg', 'gif', 'png']);
+            /** @var \Magento\Framework\Image\Adapter\AdapterInterface $imageAdapter */
+            $imageAdapter = $this->_objectManager->get('Magento\Framework\Image\AdapterFactory')->create();
+            $uploader->setAllowRenameFiles(true);
+            $uploader->setFilesDispersion(true);
+            /** @var \Magento\Framework\Filesystem\Directory\Read $mediaDirectory */
+            $mediaDirectory = $this->_objectManager->get('Magento\Framework\Filesystem')
+                ->getDirectoryRead(DirectoryList::MEDIA);
+            $result = $uploader->save($mediaDirectory->getAbsolutePath('vendor'));
+            if($result['error']==0)
+            {
+                $data['logo'] = 'vendor' . $result['file'];
+            }
+        } catch (\Exception $e) {
+            $this->messageManager->addException($e, __('Uploading of logo was failed.'));
+        }
+        if (isset($data['logo']['delete']) && $data['logo']['delete'] == '1')
+            $data['logo'] = '';
+        if (isset($data['logo']['value']) && strlen($data['logo']['value']) > 1)
+            $data['logo'] = $data['logo']['value'];
+
         $model->setData($data);
         try {
             $model->save();
@@ -33,8 +63,9 @@ class Save extends Action {
             $this->_objectManager->get('Magento\Backend\Model\Session')->setFormData(false);
             return $resultRedirect->setPath('*/*/');
         } catch (\Exception $e) {
-            $this->messageManager->addException($e, __('Something went wrong.'));
+            $this->messageManager->addException($e, __('Something went wrong while saving.'));
         }
+
         $this->_getSession()->setFormData($data);
         return $resultRedirect->setPath('*/*/edit', ['id' => $this->getRequest()->getParam('id')]);
     }
