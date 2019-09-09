@@ -1,0 +1,21 @@
+<?php
+$vendors_collection = $this->getAllVendors();
+?>
+<div>
+    <?php
+    foreach($vendors_collection as $vendor): ?>
+        <div class="hvrbox">
+             <?php if ($id = $vendor->getData('id')): ?>
+             <div class="hvrbox-layer_top">
+                 <div class="hvrbox-text">
+                     <b><?php echo $vendor->getData('name'); ?></b>
+                     <?php echo $vendor->getData('description'); ?>
+                 </div>
+             </div>
+             <img src="<?= $this->getFullImageUrl($vendor->getData('logo')); ?>"
+                 alt="<?= $vendor->getData('name'); ?>"
+                 class="hvrbox-layer_bottom">
+            <?php endif;?>
+        </div>
+    <?php endforeach;?>
+</div>

@@ -29,7 +29,7 @@ class InstallData implements InstallDataInterface {
                 'type' => 'text',
                 'backend' => 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend',
                 'frontend' => '',
-                'label' => 'Select Vendors',
+                'label' => 'Vendors',
                 'input' => 'multiselect',
                 'class' => '',
                 'source' => 'Elogic\Vendor\Model\Entity\Attribute\Source\Vendor',
