@@ -29,31 +29,33 @@ class Save extends Action {
                     throw new \Magento\Framework\Exception\LocalizedException(__('The wrong item is specified.'));
                 }
             }
-            try {
-                $uploader = $this->_objectManager->create(
-                    'Magento\MediaStorage\Model\File\Uploader',
-                    ['fileId' => 'logo']
-                );
-                $uploader->setAllowedExtensions(['jpg', 'jpeg', 'gif', 'png']);
-                /** @var \Magento\Framework\Image\Adapter\AdapterInterface $imageAdapter */
-                $imageAdapter = $this->_objectManager->get('Magento\Framework\Image\AdapterFactory')->create();
-                $uploader->setAllowRenameFiles(true);
-                $uploader->setFilesDispersion(true);
-                /** @var \Magento\Framework\Filesystem\Directory\Read $mediaDirectory */
-                $mediaDirectory = $this->_objectManager->get('Magento\Framework\Filesystem')
-                    ->getDirectoryRead(DirectoryList::MEDIA);
-                $result = $uploader->save($mediaDirectory->getAbsolutePath('vendor'));
-                if($result['error']==0)
-                {
-                    $data['logo'] = 'vendor' . $result['file'];
+
+            if (isset($_FILES['logo']['name']) && $_FILES['logo']['name'] != '') {
+                try {
+                    $uploader = $this->_objectManager->create(
+                        'Magento\MediaStorage\Model\File\Uploader',
+                        ['fileId' => 'logo']
+                    );
+                    $uploader->setAllowedExtensions(['jpg', 'jpeg', 'gif', 'png']);
+                    /** @var \Magento\Framework\Image\Adapter\AdapterInterface $imageAdapter */
+                    $imageAdapter = $this->_objectManager->get('Magento\Framework\Image\AdapterFactory')->create();
+                    $uploader->setAllowRenameFiles(true);
+                    $uploader->setFilesDispersion(true);
+                    /** @var \Magento\Framework\Filesystem\Directory\Read $mediaDirectory */
+                    $mediaDirectory = $this->_objectManager->get('Magento\Framework\Filesystem')
+                        ->getDirectoryRead(DirectoryList::MEDIA);
+                    $result = $uploader->save($mediaDirectory->getAbsolutePath('vendor'));
+                    if ($result['error'] == 0) {
+                        $data['logo'] = 'vendor' . $result['file'];
+                    }
+                } catch (\Exception $e) {
+                    $this->messageManager->addException($e, __('Uploading of logo was failed.'));
                 }
-            } catch (\Exception $e) {
-                $this->messageManager->addException($e, __('Uploading of logo was failed.'));
+                if (isset($data['logo']['delete']) && $data['logo']['delete'] == '1')
+                    $data['logo'] = '';
+                if (isset($data['logo']['value']) && strlen($data['logo']['value']) > 1)
+                    $data['logo'] = $data['logo']['value'];
             }
-            if (isset($data['logo']['delete']) && $data['logo']['delete'] == '1')
-                $data['logo'] = '';
-            if (isset($data['logo']['value']) && strlen($data['logo']['value']) > 1)
-                $data['logo'] = $data['logo']['value'];
 
             $model->setData($data);
             try {
