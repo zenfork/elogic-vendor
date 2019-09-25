@@ -9,6 +9,7 @@ use \Magento\Backend\App\Action;
 use \Magento\Backend\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
 class Index extends Action {
+    const ADMIN_RESOURCE = 'Elogic_Vendor::vendors';
     protected $_resultPageFactory;
     protected $_resultPage;
     public function __construct(Context $context, PageFactory $resultPageFactory){
