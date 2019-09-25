@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Elogic\Vendor\Api\Data\VendorInterface" type="Elogic\Vendor\Model\Vendor" />
+    <preference for="Elogic\Vendor\Api\VendorRepositoryInterface" type="Elogic\Vendor\Model\VendorRepository"/>
+    <preference for="Elogic\Vendor\Api\Data\VendorInterface" type="Elogic\Vendor\Model\Vendor"/>
+    <preference for="Elogic\Vendor\Api\Data\VendorSearchResultInterface" type="Elogic\Vendor\Model\VendorSearchResult"/>
     <virtualType name="VendorGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
         <arguments>
             <argument name="appliers" xsi:type="array">
