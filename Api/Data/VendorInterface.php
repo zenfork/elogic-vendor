@@ -60,4 +60,14 @@ interface VendorInterface extends ExtensibleDataInterface {
      * @return \Elogic\Vendor\Api\Data\VendorInterface
      */
     public function setActive($active);
+
+    /**
+     * @return int
+     */
+    public function getActiveStatus();
+
+    /**
+     * @return int
+     */
+    public function getNonActiveStatus();
 }

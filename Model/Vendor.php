@@ -61,4 +61,12 @@ class Vendor extends AbstractModel implements VendorInterface {
     {
         return $this->setData(self::ACTIVE, $active);
     }
+
+    public function getActiveStatus() {
+        return 1;
+    }
+
+    public function getNonActiveStatus() {
+        return 0;
+    }
 }

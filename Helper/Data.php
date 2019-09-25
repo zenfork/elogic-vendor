@@ -13,19 +13,26 @@ use \Magento\Store\Model\ScopeInterface;
 class Data extends AbstractHelper {
     const VENDOR_ATTR = 'elogic_vendor';
     private $objectManager;
+    protected $_model;
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\ObjectManagerInterface $objectManager
+        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Elogic\Vendor\Model\Vendor $model
     ){
         $this->objectManager = $objectManager;
+        $this->_model = $model;
         parent::__construct($context);
     }
     public function getVendors(){
-        $collection = $this->objectManager->get('Elogic\Vendor\Model\Vendor')->getCollection();
+        $model = $this->_model;
+        $collection = $model->getCollection();
+        $collection->addFieldToFilter('active',  $model->getActiveStatus());
         return $collection;
     }
     public function getVendorsByIds($vendorIds = 0){
-        $collection = $this->objectManager->get('Elogic\Vendor\Model\Vendor')->getCollection();
+        $model = $this->_model;
+        $collection = $model->getCollection();
+        $collection->addFieldToFilter('active', $model->getActiveStatus());
         $collection->addFieldToFilter('id', ['in' => $vendorIds]);
         return $collection;
     }
