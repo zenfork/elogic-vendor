@@ -6,11 +6,11 @@ use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Elogic\Vendor\Api\Data\VendorInterface;
-use Elogic\Vendor\Api\Data\VendorSearchResultInterface;
 use Elogic\Vendor\Api\Data\VendorSearchResultInterfaceFactory;
 use Elogic\Vendor\Api\VendorRepositoryInterface;
 use Elogic\Vendor\Model\ResourceModel\Vendor\CollectionFactory as VendorCollectionFactory;
 use Elogic\Vendor\Model\ResourceModel\Vendor\Collection;
+use Elogic\Vendor\Model\ResourceModel\Vendor as VendorResource;
 
 class VendorRepository implements VendorRepositoryInterface
 {
@@ -28,21 +28,27 @@ class VendorRepository implements VendorRepositoryInterface
      * @var VendorSearchResultInterfaceFactory
      */
     private $searchResultFactory;
+    /**
+     * @var VendorResource
+     */
+    private $vendorResource;
 
     public function __construct(
         VendorFactory $vendorFactory,
         VendorCollectionFactory $vendorCollectionFactory,
-        VendorSearchResultInterfaceFactory $vendorSearchResultInterfaceFactory
+        VendorSearchResultInterfaceFactory $vendorSearchResultInterfaceFactory,
+        VendorResource $vendorResource
     ) {
         $this->vendorFactory = $vendorFactory;
         $this->vendorCollectionFactory = $vendorCollectionFactory;
         $this->searchResultFactory = $vendorSearchResultInterfaceFactory;
+        $this->vendorResource = $vendorResource;
     }
     
     public function getById($id)
     {
         $vendor = $this->vendorFactory->create();
-        $vendor->getResource()->load($vendor, $id);
+        $this->vendorResource->load($vendor, $id);
         if (! $vendor->getId()) {
             throw new NoSuchEntityException(__('Unable to find vendor with ID "%1"', $id));
         }

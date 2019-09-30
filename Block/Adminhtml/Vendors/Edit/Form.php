@@ -37,10 +37,12 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic {
         $this->setId('vendor_form');
         $this->setTitle(__('Vendor'));
     }
+
     /**
      * Prepare form
      *
      * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareForm(){
         $model = $this->_coreRegistry->registry('vendor');

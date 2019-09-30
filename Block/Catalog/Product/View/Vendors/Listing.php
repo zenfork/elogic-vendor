@@ -4,11 +4,29 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Registry;
 use Elogic\Vendor\Helper\Data;
-use Elogic\Vendor\Model\Vendor;
+use Elogic\Vendor\Api\Data\VendorInterface;
+use Elogic\Vendor\Model\ResourceModel\Vendor\CollectionFactory as VendorCollectionFactory;
 class Listing extends \Magento\Framework\View\Element\Template {
+    /**
+     * @var Data
+     */
     private $helper;
+    /**
+     * @var \Elogic\Vendor\Model\ResourceModel\Vendor\Collection
+     */
     private $collection;
+    /**
+     * @var mixed
+     */
     private $product;
+    /**
+     * @var VendorCollectionFactory
+     */
+    private $vendorCollectionFactory;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
 
     /**
      * Listing constructor.
@@ -16,8 +34,8 @@ class Listing extends \Magento\Framework\View\Element\Template {
      * @param Registry $registry
      * @param StoreManagerInterface $storeManager
      * @param Data $helper
-     * @param Vendor $_vendor
-     * @param StoreManagerInterface $storeManager
+     * @param VendorCollectionFactory $vendorCollectionFactory
+     * @param VendorInterface $vendor
      * @param array $data
      */
     public function __construct(
@@ -25,12 +43,14 @@ class Listing extends \Magento\Framework\View\Element\Template {
         Registry $registry,
         StoreManagerInterface $storeManager,
         Data $helper,
-        Vendor $_vendor,
+        VendorCollectionFactory $vendorCollectionFactory,
+        VendorInterface $vendor,
         array $data
     ){
         $this->helper = $helper;
         $this->product = $registry->registry('product');
-        $collection = $_vendor->getCollection()
+        $this->vendorCollectionFactory = $vendorCollectionFactory;
+        $collection = $this->vendorCollectionFactory->create()
             ->addFieldToFilter('active', true)->setOrder('id', 'asc');
         $this->collection = $collection;
         $this->storeManager = $storeManager;
