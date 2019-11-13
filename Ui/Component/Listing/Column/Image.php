@@ -47,7 +47,7 @@ class Image extends \Magento\Ui\Component\Listing\Columns\Column
                     $url = '';
                     $url = $this->storeManager->getStore()->getBaseUrl(
                             \Magento\Framework\UrlInterface::URL_TYPE_MEDIA
-                        ) . $item[$fieldName];
+                        ) .'vendor/tmp/logos/'. $item[$fieldName];
                     $item[$fieldName . '_src'] = $url;
                     $item[$fieldName . '_alt'] = $this->getAlt($item) ?: '';
                     $item[$fieldName . '_orig_src'] = $url;

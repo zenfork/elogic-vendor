@@ -2,50 +2,59 @@
 namespace Elogic\Vendor\Controller\Adminhtml\Vendors;
 use Elogic\Vendor\Api\Data\VendorInterface;
 use Elogic\Vendor\Api\VendorRepositoryInterface;
-use Magento\Backend\App\Action;
+use Elogic\Vendor\Model\VendorFactory;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Request\DataPersistor;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Request\Http;
-class Save extends Action {
+class Save extends \Magento\Backend\App\Action {
     /**
-     * @var PageFactory
+     * @var VendorFactory
      */
-    protected $_resultPageFactory;
+    private $vendorFactory;
     /**
      * @var VendorInterface
      */
-    protected $_model;
+    protected $model;
     /**
      * @var VendorRepositoryInterface
      */
-    protected $_vendorRepository;
+    protected $vendorRepository;
     /**
      * @var Http
      */
-    protected $_request;
+    protected $request;
+    /**
+     * @var DataPersistor
+     */
+    private $dataPersistor;
 
     /**
      * Save constructor.
      * @param Context $context
-     * @param PageFactory $resultPageFactory
+     * @param DataPersistor $dataPersistor
+     * @param VendorFactory $vendorFactory
      * @param VendorInterface $model
      * @param VendorRepositoryInterface $vendorRepository
      * @param Http $request
      */
     public function __construct(
         Context $context,
-        PageFactory $resultPageFactory,
+        DataPersistor $dataPersistor,
+        VendorFactory $vendorFactory,
         VendorInterface $model,
         VendorRepositoryInterface $vendorRepository,
         Http $request
     ){
         parent::__construct($context);
-        $this->_resultPageFactory = $resultPageFactory;
-        $this->_model = $model;
-        $this->_vendorRepository = $vendorRepository;
-        $this->_request = $request;
+        $this->dataPersistor = $dataPersistor;
+        $this->vendorFactory = $vendorFactory;
+        $this->model = $model;
+        $this->vendorRepository = $vendorRepository;
+        $this->request = $request;
     }
 
     /**
@@ -53,67 +62,72 @@ class Save extends Action {
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function execute(){
-        $data = $this->getRequest()->getPostValue();
+        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();
-        if ($data) {
-            $id = $this->getRequest()->getParam('id');
-            if ($id > 0) {
+
+        $vendorId = null;
+        $vendorPostData = $this->getRequest()->getPostValue();
+
+        $isNewVendor = empty($vendorPostData['id']);
+
+        if ($vendorPostData) {
+            if ($isNewVendor) {
+                $vendorPostData['id'] = null;
+            }
+            $vendorId = $this->getRequest()->getParam('id');
+            if ($vendorId > 0) {
                 try {
-                    $vendor = $this->_vendorRepository->getById($id);
-                    if ($id != $vendor->getId()) {
+                    $vendor = $this->vendorRepository->getById($vendorId);
+                    if ($vendorId != $vendor->getId()) {
                         throw new \Magento\Framework\Exception\LocalizedException(__('The wrong item is specified.'));
                     }
-                    if ($this->_request->getFiles('logo')['size'] > 0) {
-                        try {
-                            $uploader = $this->_objectManager->create(
-                                'Magento\MediaStorage\Model\File\Uploader',
-                                ['fileId' => 'logo']
-                            );
-                            $uploader->setAllowedExtensions(['jpg', 'jpeg', 'gif', 'png']);
-                            /** @var \Magento\Framework\Image\Adapter\AdapterInterface $imageAdapter */
-                            $imageAdapter = $this->_objectManager->get('Magento\Framework\Image\AdapterFactory')->create();
-                            $uploader->setAllowRenameFiles(true);
-                            $uploader->setFilesDispersion(true);
-                            /** @var \Magento\Framework\Filesystem\Directory\Read $mediaDirectory */
-                            $mediaDirectory = $this->_objectManager->get('Magento\Framework\Filesystem')
-                                ->getDirectoryRead(DirectoryList::MEDIA);
-                            $result = $uploader->save($mediaDirectory->getAbsolutePath('vendor'));
-                            if ($result['file']) {
-                                $this->messageManager->addSuccessMessage(__('Logo has been successfully uploaded'));
-                            }
-                            if ($result['error'] == 0) {
-                                $data['logo'] = 'vendor' . $result['file'];
-                            }
-                        } catch (\Exception $e) {
-                            $this->messageManager->addExceptionMessage($e, __('Uploading of logo was failed.'));
-                        }
-                    }
-
-                    if (isset($data['logo']['delete']) && $data['logo']['delete'] == '1')
-                        $data['logo'] = '';
-                    if (isset($data['logo']['value']) && strlen($data['logo']['value']) > 1)
-                        $data['logo'] = $data['logo']['value'];
-
-                    $vendor->setData($data);
-
-                    try {
-                        $this->_vendorRepository->save($vendor);
-                        $this->messageManager->addSuccessMessage(__('Saved.'));
-                        if ($this->getRequest()->getParam('back')) {
-                            return $resultRedirect->setPath('*/*/edit', ['id' => $model->getId(), '_current' => true]);
-                        }
-                        $this->_objectManager->get('Magento\Backend\Model\Session')->setFormData(false);
-                        return $resultRedirect->setPath('*/*/');
-                    } catch (\Exception $e) {
-                        $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving.'));
-                    }
-                    $this->_getSession()->setFormData($data);
-                } catch (NoSuchEntityException $e) {
-                    $this->messageManager->addErrorMessage(__('ID with such vendor not found.'));
+                } catch (LocalizedException $e) {
+                    $this->messageManager->addErrorMessage(__('This vendor no longer exists.'));
+                    return $resultRedirect->setPath('*/*/');
                 }
             }
+
+            $vendorPostData = $this->_filterVendorData($vendorPostData);
+
+            /** @var \Elogic\Vendor\Model\Vendor $vendor */
+            $vendor = $this->vendorFactory->create();
+
+            $vendor->setData($vendorPostData);
+
+            try {
+                $this->vendorRepository->save($vendor);
+                $vendorId = $vendor->getId();
+                $this->messageManager->addSuccessMessage(__('Saved.'));
+            } catch (\Exception $e) {
+                $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving.'));
+            }
+
+            $this->dataPersistor->set('elogic_vendor_vendor', $vendorPostData);
         }
-        return $resultRedirect->setPath('*/*/edit', ['id' => $this->getRequest()->getParam('id')]);
+
+        $redirectParams = $this->getRedirectParams($isNewVendor, $vendorId);
+
+        return $resultRedirect->setPath(
+            $redirectParams['path'],
+            $redirectParams['params']
+        );
+    }
+
+    /**
+     * Set image to null if it is deleted
+     *
+     * @param array $rawData
+     * @return array
+     */
+    public function _filterVendorData($rawData)
+    {
+        $data = $rawData;
+        if (isset($data['logo'][0]['name'])) {
+            $data['logo'] = $data['logo'][0]['name'];
+        } else {
+            $data['logo'] = null;
+        }
+        return $data;
     }
 
     /**
@@ -121,5 +135,28 @@ class Save extends Action {
      */
     protected function _isAllowed(){
         return $this->_authorization->isAllowed('Elogic_Vendor::vendor_save');
+    }
+
+    /**
+     * Get category redirect path
+     *
+     * @param bool $isNewVendor
+     * @param bool $hasError
+     * @param int $vendorId
+     * @return array
+     */
+    protected function getRedirectParams($isNewVendor, $vendorId)
+    {
+        $params = [];
+        if (!$this->getRequest()->getParam('back')) {
+            $path = '*/*/';
+        }
+        elseif ($isNewVendor) {
+            $path = 'vendor/*/add';
+        } else {
+            $path = 'vendor/*/edit';
+            $params['id'] = $vendorId;
+        }
+        return ['path' => $path, 'params' => $params];
     }
 }

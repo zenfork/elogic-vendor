@@ -25,12 +25,30 @@
             <argument name="resourceModel" xsi:type="string">Elogic\Vendor\Model\ResourceModel\Vendor</argument>
         </arguments>
     </virtualType>
+    <!-- Vendor logo uploader -->
+    <virtualType name="VendorImageUploader" type="Magento\Catalog\Model\ImageUploader">
+        <arguments>
+            <argument name="baseTmpPath" xsi:type="string">vendor/tmp/logos</argument>
+            <argument name="basePath" xsi:type="string">vendor/logos</argument>
+            <argument name="allowedExtensions" xsi:type="array">
+                <item name="jpg" xsi:type="string">jpg</item>
+                <item name="jpeg" xsi:type="string">jpeg</item>
+                <item name="gif" xsi:type="string">gif</item>
+                <item name="png" xsi:type="string">png</item>
+            </argument>
+        </arguments>
+    </virtualType>
     <!-- Type for vendor_vendors_listing_data_source -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">
                 <item name="vendor_vendors_listing_data_source" xsi:type="string">Elogic\Vendor\Model\ResourceModel\Vendor\Grid\Collection</item>
             </argument>
+        </arguments>
+    </type>
+    <type name="Elogic\Vendor\Controller\Adminhtml\Vendors\Logo\Upload">
+        <arguments>
+            <argument name="imageUploader" xsi:type="object">VendorImageUploader</argument>
         </arguments>
     </type>
 </config>

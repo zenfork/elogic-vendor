@@ -70,4 +70,9 @@ interface VendorInterface extends ExtensibleDataInterface {
      * @return int
      */
     public function getNonActiveStatus();
+
+    /**
+     * @return mixed
+     */
+    public function getDataForForm();
 }

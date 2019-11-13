@@ -4,46 +4,44 @@ use Elogic\Vendor\Api\VendorRepositoryInterface;
 use Elogic\Vendor\Api\Data\VendorInterface;
 use Magento\Backend\App\Action;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
 
 class Edit extends \Magento\Backend\App\Action{
     /**
-     * @var Registry|null
+     * Authorization level of a basic admin session
+     *
+     * @see _isAllowed()
      */
-    protected $_coreRegistry = null;
+    const ADMIN_RESOURCE = 'Elogic_Vendor::vendor_save"';
     /**
      * @var PageFactory
      */
-    protected $_resultPageFactory;
+    protected $resultPageFactory;
     /**
      * @var VendorRepositoryInterface
      */
-    protected $_vendorRepository;
+    protected $vendorRepository;
     /**
      * @var VendorInterface
      */
-    protected $_vendor;
+    protected $vendor;
 
     /**
      * Edit constructor.
      * @param Action\Context $context
      * @param PageFactory $resultPageFactory
-     * @param Registry $registry
      * @param VendorRepositoryInterface $vendorRepository
      * @param VendorInterface $vendor
      */
     public function __construct(
         Action\Context $context,
         PageFactory $resultPageFactory,
-        Registry $registry,
         VendorRepositoryInterface $vendorRepository,
         VendorInterface $vendor
     ) {
-        $this->_resultPageFactory = $resultPageFactory;
-        $this->_coreRegistry = $registry;
-        $this->_vendorRepository = $vendorRepository;
-        $this->_vendor = $vendor;
+        $this->resultPageFactory = $resultPageFactory;
+        $this->vendorRepository = $vendorRepository;
+        $this->vendor = $vendor;
         parent::__construct($context);
     }
 
@@ -58,7 +56,7 @@ class Edit extends \Magento\Backend\App\Action{
      * @return \Magento\Framework\View\Result\Page
      */
     protected function _initAction(){
-        $resultPage = $this->_resultPageFactory->create();
+        $resultPage = $this->resultPageFactory->create();
         $resultPage->setActiveMenu('Elogic_Vendor::vendors')
             ->addBreadcrumb(__('Vendors'), __('Vendors'))
             ->addBreadcrumb(__('Edit'), __('Edit'));
@@ -68,22 +66,17 @@ class Edit extends \Magento\Backend\App\Action{
     /**
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface|\Magento\Framework\View\Result\Page
      */
-    public function execute(){
+    public function execute()
+    {
         $id = $this->getRequest()->getParam('id');
 
         // If you have got an id, it's edition
         if ($id > 0) {
             try {
-                $vendor = $this->_vendorRepository->getById($id);
-
-                $data = $this->_getSession()->getFormData(true);
-                if (!empty($data)) {
-                    $vendor->setData($data);
-                }
-                $this->_coreRegistry->register('vendor', $vendor);
+                $vendor = $this->vendorRepository->getById($id);
 
                 if (!$vendor->getId()) {
-                    $this->messageManager->addErrorMessage(__('This vendor not exists.'));
+                    $this->messageManager->addErrorMessage(__('This vendor doesn\'t exists.'));
                     /** \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
                     $resultRedirect = $this->resultRedirectFactory->create();
 
