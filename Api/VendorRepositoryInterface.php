@@ -27,7 +27,7 @@ interface VendorRepositoryInterface
 
     /**
      * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
-     * @return \Elogic\Vendor\Api\Data\HamburgerSearchResultInterface
+     * @return \Elogic\Vendor\Api\Data\VendorSearchResultInterface
      */
     public function getList(SearchCriteriaInterface $searchCriteria);
 }
