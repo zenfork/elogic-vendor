@@ -31,6 +31,7 @@ class Save extends \Magento\Backend\App\Action {
      * @var DataPersistor
      */
     private $dataPersistor;
+    private $imageUploader;
 
     /**
      * Save constructor.
@@ -122,11 +123,21 @@ class Save extends \Magento\Backend\App\Action {
     public function _filterVendorData($rawData)
     {
         $data = $rawData;
-        if (isset($data['logo'][0]['name'])) {
+
+        // is set "name" and "tmp_name"
+        if (isset($data['logo'][0]['name']) && isset($data['logo'][0]['tmp_name'])) {
             $data['logo'] = $data['logo'][0]['name'];
+            $imageUploader = \Magento\Framework\App\ObjectManager::getInstance()->get(
+                'VendorImageUploader'
+            );
+            $imageUploader->moveFileFromTmp($data['logo']);
+        // only image without "tmp_name"
+        } elseif (isset($data['logo'][0]['image']) && !isset($data['logo'][0]['tmp_name'])) {
+            $data['logo'] = $data['logo'][0]['image'];
         } else {
             $data['logo'] = null;
         }
+
         return $data;
     }
 

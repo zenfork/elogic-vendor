@@ -69,12 +69,12 @@ class Edit extends \Magento\Backend\App\Action{
     public function execute()
     {
         $id = $this->getRequest()->getParam('id');
+        $vendor = $this->vendor;
 
         // If you have got an id, it's edition
         if ($id > 0) {
             try {
                 $vendor = $this->vendorRepository->getById($id);
-
                 if (!$vendor->getId()) {
                     $this->messageManager->addErrorMessage(__('This vendor doesn\'t exists.'));
                     /** \Magento\Backend\Model\View\Result\Redirect $resultRedirect */

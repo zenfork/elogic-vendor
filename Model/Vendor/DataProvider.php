@@ -94,13 +94,7 @@ class DataProvider extends \Magento\Ui\DataProvider\ModifierPoolDataProvider
         $items = $this->collection->getItems();
         /** @var $vendor \Elogic\Vendor\Api\Data\VendorInterface */
         foreach ($items as $vendor) {
-            $this->loadedData[$vendor->getId()] = $vendor->getDataForForm();;
-            if ($vendor->getLogo()) {
-                $m['logo'][0]['name'] = $vendor->getLogo();
-                $m['logo'][0]['url'] = $this->getMediaUrl().$vendor->getLogo();
-                $fullData = $this->loadedData;
-                $this->loadedData[$vendor->getId()] = array_merge($fullData[$vendor->getId()], $m);
-            }
+            $this->loadedData[$vendor->getId()] = $vendor->getDataForForm();
         }
 
         $data = $this->dataPersistor->get('elogic_vendor_vendor');
@@ -112,13 +106,21 @@ class DataProvider extends \Magento\Ui\DataProvider\ModifierPoolDataProvider
             $this->dataPersistor->clear('elogic_vendor_vendor');
         }
 
+        // TODO: Rewrite getLogo(). This function should return full path to img, besides the name
+        if ($vendor->getLogo()) {
+            $m['logo'][0]['name'] = $vendor->getLogo();
+            $m['logo'][0]['url'] = $this->getMediaUrl().$vendor->getLogo();
+            $fullData = $this->loadedData;
+            $this->loadedData[$vendor->getId()] = array_merge($fullData[$vendor->getId()], $m);
+        }
+
         return $this->loadedData;
     }
 
     private function getMediaUrl()
     {
         return $this->storeManager->getStore()
-                ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA).'vendor/tmp/logos/';
+                ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA).'vendor/logos/';
     }
 
     /**
