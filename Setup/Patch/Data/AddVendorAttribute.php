@@ -4,29 +4,32 @@
  * See COPYING.txt for license details.
  */
 
-namespace Magento\DummyModule\Setup\Patch\Data;
+namespace Elogic\Vendor\Setup\Patch\Data;
 
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
-use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 /**
  */
-class AddVendorAttribute
-    implements DataPatchInterface,
-    PatchRevertableInterface
+class AddVendorAttribute implements DataPatchInterface
 {
     /**
-     * @var \Magento\Framework\Setup\ModuleDataSetupInterface
+     * @var ModuleDataSetupInterface
      */
     private $moduleDataSetup;
+
+    /**
+     * @var EavSetupFactory
+     */
     private $eavSetupFactory;
 
     /**
      * @param \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetup
      */
     public function __construct(
-        \Magento\Framework\Setup\ModuleDataSetupInterface $moduleDataSetup,
-        \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory
+        ModuleDataSetupInterface $moduleDataSetup,
+        EavSetupFactory $eavSetupFactory
     ) {
         /**
          * If before, we pass $setup as argument in install/upgrade function, from now we start
